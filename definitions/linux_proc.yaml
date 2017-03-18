@@ -1,15 +1,5 @@
 # Linux specific /proc artifacts.
 
-name: LinuxSysctlCmd
-doc: Linux output of systctl -a.
-sources:
-- type: COMMAND
-  attributes:
-    args: ["-a"]
-    cmd: /sbin/sysctl
-supported_os: [Linux]
-urls: ['https://www.kernel.org/doc/Documentation/sysctl']
----
 name: LinuxASLREnabled
 doc: Kernel ASLR state.
 sources:
@@ -40,15 +30,6 @@ labels: [System]
 supported_os: [Linux]
 urls: ['https://www.kernel.org/doc/Documentation/sysctl/kernel.txt']
 ---
-name: LinuxKernelModuleTaintStatus
-doc: Taint state of loaded modules (binary blobs, unsigned modules etc).
-sources:
-- type: FILE
-  attributes: {paths: ['/proc/sys/kernel/tainted']}
-labels: [System]
-supported_os: [Linux]
-urls: ['https://www.kernel.org/doc/Documentation/sysctl/kernel.txt']
----
 name: LinuxKernelModuleRestrictions
 doc: Module loading controls.
 sources:
@@ -57,6 +38,15 @@ sources:
     paths:
       - '/proc/sys/kernel/kexec_load_disabled'
       - '/proc/sys/kernel/modules_disabled'
+labels: [System]
+supported_os: [Linux]
+urls: ['https://www.kernel.org/doc/Documentation/sysctl/kernel.txt']
+---
+name: LinuxKernelModuleTaintStatus
+doc: Taint state of loaded modules (binary blobs, unsigned modules etc).
+sources:
+- type: FILE
+  attributes: {paths: ['/proc/sys/kernel/tainted']}
 labels: [System]
 supported_os: [Linux]
 urls: ['https://www.kernel.org/doc/Documentation/sysctl/kernel.txt']
@@ -111,6 +101,28 @@ labels: [System]
 supported_os: [Linux]
 urls: ['https://www.kernel.org/doc/Documentation/filesystems/proc.txt']
 ---
+name: LinuxProcSysHardeningSettings
+doc: Linux sysctl settings obtained from /proc/sys.
+sources:
+- type: ARTIFACT_GROUP
+  attributes:
+    names:
+      - 'LinuxASLREnabled'
+      - 'LinuxIgnoreICMPBroadcasts'
+      - 'LinuxKernelBootloader'
+      - 'LinuxKernelModuleTaintStatus'
+      - 'LinuxKernelModuleRestrictions'
+      - 'LinuxNetworkIpForwardingState'
+      - 'LinuxNetworkPathFilteringSettings'
+      - 'LinuxNetworkRedirectState'
+      - 'LinuxRestrictedDmesgReadPrivileges'
+      - 'LinuxRestrictedKernelPointerReadPrivileges'
+      - 'LinuxSecureSuidCoreDumps'
+      - 'LinuxSecureFsLinks'
+      - 'LinuxSyncookieState'
+labels: [System]
+supported_os: [Linux]
+---
 name: LinuxRestrictedDmesgReadPrivileges
 doc: Restrict whether non-privileged users can read dmesg.
 sources:
@@ -131,15 +143,6 @@ labels: [System]
 supported_os: [Linux]
 urls: ['https://www.kernel.org/doc/Documentation/sysctl/kernel.txt']
 ---
-name: LinuxSecureSuidCoreDumps
-doc: Security controls for suid core dumps.
-sources:
-- type: FILE
-  attributes: {paths: ['/proc/sys/fs/suid_dumpable']}
-labels: [System]
-supported_os: [Linux]
-urls: ['https://www.kernel.org/doc/Documentation/sysctl/fs.txt']
----
 name: LinuxSecureFsLinks
 doc: Security controls to restrict operations on links in world writable directories.
 sources:
@@ -148,6 +151,15 @@ sources:
     paths:
       - '/proc/sys/fs/protected_hardlinks'
       - '/proc/sys/fs/protected_symlinks'
+labels: [System]
+supported_os: [Linux]
+urls: ['https://www.kernel.org/doc/Documentation/sysctl/fs.txt']
+---
+name: LinuxSecureSuidCoreDumps
+doc: Security controls for suid core dumps.
+sources:
+- type: FILE
+  attributes: {paths: ['/proc/sys/fs/suid_dumpable']}
 labels: [System]
 supported_os: [Linux]
 urls: ['https://www.kernel.org/doc/Documentation/sysctl/fs.txt']
@@ -161,25 +173,12 @@ labels: [Network, System]
 supported_os: [Linux]
 urls: ['https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt']
 ---
-name: LinuxProcSysHardeningSettings
-doc: Linux sysctl settings obtained from /proc/sys.
+name: LinuxSysctlCmd
+doc: Linux output of systctl -a.
 sources:
-- type: ARTIFACT
+- type: COMMAND
   attributes:
-    names:
-      - 'LinuxASLREnabled'
-      - 'LinuxIgnoreICMPBroadcasts'
-      - 'LinuxKernelBootloader'
-      - 'LinuxKernelModuleTaintStatus'
-      - 'LinuxKernelModuleRestrictions'
-      - 'LinuxNetworkIpForwardingState'
-      - 'LinuxNetworkPathFilteringSettings'
-      - 'LinuxNetworkRedirectState'
-      - 'LinuxRestrictedDmesgReadPrivileges'
-      - 'LinuxRestrictedKernelPointerReadPrivileges'
-      - 'LinuxSecureSuidCoreDumps'
-      - 'LinuxSecureFsLinks'
-      - 'LinuxSyncookieState'
-labels: [System]
+    args: ["-a"]
+    cmd: /sbin/sysctl
 supported_os: [Linux]
-
+urls: ['https://www.kernel.org/doc/Documentation/sysctl']

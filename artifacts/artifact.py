@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """The reader objects."""
 
-from artifacts import definitions
 from artifacts import errors
 from artifacts import source_type
 
@@ -50,38 +49,50 @@ class ArtifactDefinition(object):
     if not type_indicator:
       raise errors.FormatError(u'Missing type indicator.')
 
-    source_type_class = None
-    if type_indicator == definitions.TYPE_INDICATOR_ARTIFACT:
-      source_type_class = source_type.ArtifactSourceType
-
-    elif type_indicator == definitions.TYPE_INDICATOR_COMMAND:
-      source_type_class = source_type.CommandSourceType
-
-    elif type_indicator == definitions.TYPE_INDICATOR_COMMAND:
-      source_type_class = source_type.CommandCollectorDefinition
-
-    elif type_indicator == definitions.TYPE_INDICATOR_DIRECTORY:
-      source_type_class = source_type.DirectorySourceType
-
-    elif type_indicator == definitions.TYPE_INDICATOR_FILE:
-      source_type_class = source_type.FileSourceType
-
-    elif type_indicator == definitions.TYPE_INDICATOR_PATH:
-      source_type_class = source_type.PathSourceType
-
-    elif type_indicator == definitions.TYPE_INDICATOR_WINDOWS_REGISTRY_KEY:
-      source_type_class = source_type.WindowsRegistryKeySourceType
-
-    elif type_indicator == definitions.TYPE_INDICATOR_WINDOWS_REGISTRY_VALUE:
-      source_type_class = source_type.WindowsRegistryValueSourceType
-
-    elif type_indicator == definitions.TYPE_INDICATOR_WMI_QUERY:
-      source_type_class = source_type.WMIQuerySourceType
-
-    else:
+    try:
+      source_object = source_type.SourceTypeFactory.CreateSourceType(
+          type_indicator, attributes)
+    except (AttributeError, TypeError) as exception:
       raise errors.FormatError(
-          u'Unsupported type indicator: {0:s}.'.format(type_indicator))
+          u'Invalid artifact definition for {0}: {1}'.format(self.name,
+                                                             exception))
 
-    source_object = source_type_class(**attributes)
     self.sources.append(source_object)
     return source_object
+
+  def AsDict(self):
+    """Represents an artifact as a dictionary.
+
+    Returns:
+      A dictionary containing the artifact attributes.
+    """
+    sources = []
+    for source in self.sources:
+      source_definition = {
+          u'type': source.type_indicator,
+          u'attributes': source.AsDict()
+      }
+      if source.supported_os:
+        source_definition[u'supported_os'] = source.supported_os
+      if source.conditions:
+        source_definition[u'conditions'] = source.conditions
+      if source.returned_types:
+        source_definition[u'returned_types'] = source.returned_types
+      sources.append(source_definition)
+
+    artifact_definition = {
+        u'name': self.name,
+        u'doc': self.description,
+        u'sources': sources,
+    }
+    if self.labels:
+      artifact_definition[u'labels'] = self.labels
+    if self.supported_os:
+      artifact_definition[u'supported_os'] = self.supported_os
+    if self.provides:
+      artifact_definition[u'provides'] = self.provides
+    if self.conditions:
+      artifact_definition[u'conditions'] = self.conditions
+    if self.urls:
+      artifact_definition[u'urls'] = self.urls
+    return artifact_definition

@@ -42,34 +42,23 @@ while being tool agnostic. In particular we intentionally avoided adding
 IOC-like logic, or describing how the data should be collected since this
 various between tools.
 
-== Terminology
-The term artifact (or artefact) is widely used within computer (or digital)
-forensics, though there is no official definition of this term.
+=== Terminology
+The term artifact (or artefact) is widely used within computer (or digital) forensics, though there is no official definition of this term.
 
-The definition closest to the meaning of the word within computer forensics is
-that of the word artifact within
-http://en.wikipedia.org/wiki/Artifact_(archaeology)[archaeology]. The term
-should not be confused with the word artifact used within
-http://en.wikipedia.org/wiki/Artifact_(software_development)[software
-development].
+The definition closest to the meaning of the word within computer forensics is that of the word artifact within http://en.wikipedia.org/wiki/Artifact_(archaeology)[archaeology]. The term should not be confused with the word artifact used within http://en.wikipedia.org/wiki/Artifact_(software_development)[software development].
 
 If archaeology defines an artifact as:
-
-[quote]
-____
+```
 something made or given shape by man, such as a tool or
 a work of art, esp an object of archaeological interest
-____
+```
 
 The definition of artifact within computer forensics could be:
-
-[quote]
-____
+```
 An object of digital archaeological interest.
-____
+```
 
-Where digital archaeology roughly refers to computer forensics without the
-forensic (legal) context.
+Where digital archaeology roughly refers to computer forensics without the forensic (legal) context.
 
 == The artifact definition
 The best way to show what an artifact definition is, is by example. The
@@ -187,7 +176,7 @@ Currently the following different source types are defined:
 [cols="1,5",options="header"]
 |===
 | Value | Description
-| ARTIFACT | A source that consists of other artifacts.
+| ARTIFACT_GROUP | A source that consists of a group of other artifacts.
 | COMMAND | A source that consists of the output of a command.
 | FILE | A source that consists of the contents of files.
 | PATH | A source that consists of the contents of paths.
@@ -200,12 +189,12 @@ The sources types are defined in
 link:https://github.com/ForensicArtifacts/artifacts/blob/master/artifacts/definitions.py[definitions.py]
 as TYPE_INDICATOR constants.
 
-=== Artifact source
-The artifact source is a source that consists of other artifacts e.g.
+=== Artifact group source
+The artifact group source is a source that consists of a group of other artifacts e.g.
 
 [source,yaml]
 ----
-- type: ARTIFACT
+- type: ARTIFACT_GROUP
   attributes:
     names: [WindowsRunKeys, WindowsServices]
   returned_types: [PersistenceFile]

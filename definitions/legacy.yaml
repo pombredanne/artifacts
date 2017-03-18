@@ -1,5 +1,5 @@
-# These are bootstrap artifacts that are used to build the core knowledgebase
-# used for interpolation in the rest of the artifacts.
+# Deprecated definitions kept for backwards compatibility with GRR
+# for the time being.
 
 name: AllUsersAppDataEnvironmentVariable
 doc: The %ProgramData% environment variable.
@@ -39,7 +39,7 @@ sources:
     paths: ['\Program Files']
     separator: '\'
 - type: REGISTRY_VALUE
-  attributes: {key_value_pairs: [{key: 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion', value: 'ProgramFilesDir'}]}
+  attributes: {key_value_pairs: [{key: 'HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion', value: 'ProgramFilesDir'}]}
 provides: [environ_programfiles]
 supported_os: [Windows]
 urls: ['http://environmentvariables.org/ProgramFiles']
@@ -52,7 +52,7 @@ sources:
     paths: ['\Program Files (x86)']
     separator: '\'
 - type: REGISTRY_VALUE
-  attributes: {key_value_pairs: [{key: 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion', value: 'ProgramFilesDir (x86)'}]}
+  attributes: {key_value_pairs: [{key: 'HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion', value: 'ProgramFilesDir (x86)'}]}
 provides: [environ_programfilesx86]
 supported_os: [Windows]
 urls: ['http://environmentvariables.org/ProgramFiles']
@@ -65,7 +65,7 @@ doc: |
   can figure it out from SystemRoot.
 sources:
 - type: REGISTRY_VALUE
-  attributes: {key_value_pairs: [{key: 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion', value: 'SystemRoot'}]}
+  attributes: {key_value_pairs: [{key: 'HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion', value: 'SystemRoot'}]}
 provides: [environ_systemdrive]
 supported_os: [Windows]
 urls:
@@ -84,7 +84,7 @@ sources:
       - '\WTSRV'
     separator: '\'
 - type: REGISTRY_VALUE
-  attributes: {key_value_pairs: [{key: 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion', value: 'SystemRoot'}]}
+  attributes: {key_value_pairs: [{key: 'HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion', value: 'SystemRoot'}]}
 provides: [environ_systemroot]
 supported_os: [Windows]
 urls: ['http://environmentvariables.org/SystemRoot']
@@ -173,53 +173,3 @@ sources:
 provides: [time_zone]
 supported_os: [Windows]
 urls: ['https://github.com/libyal/winreg-kb/wiki/Time-zone-keys']
----
-name: WindowsRegistryProfiles
-doc: |
-  Get SIDs for all users on the system with profiles present in the Registry.
-
-  This looks in the Windows Registry where the profiles are stored and retrieves
-  the paths for each profile.
-sources:
-- type: REGISTRY_KEY
-  attributes: {keys: ['HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\*\ProfileImagePath']}
-labels: [Users]
-provides: [users.sid, users.userprofile, users.homedir, users.username]
-supported_os: [Windows]
-urls: ['http://msdn.microsoft.com/en-us/library/windows/desktop/bb776892(v=vs.85).aspx']
----
-name: WMIAccountUsersDomain
-doc: |
-  Fill out user AD domain information based on username.
-
-  We expect this artifact to be collected with WindowsRegistryProfiles
-  to supply the rest of the user information. This artifact optimizes retrieval
-  of user information by limiting the WMI query to users for which we have
-  a username for. Specifically this solves the issue that in a domain setting,
-  querying for all users via WMI will give you the list of all local and domain
-  accounts which means a large data transfer from an Active Directory server.
-  This artifact relies on having the users.username field populated in the knowledge
-  base. Unfortunately even limiting by username this query can be slow, and
-  this artifact runs it for each user present on the system.
-sources:
-- type: WMI
-  attributes: {query: SELECT * FROM Win32_UserAccount WHERE name='%%users.username%%'}
-labels: [Users]
-provides: [users.userdomain]
-supported_os: [Windows]
-urls: ['http://msdn.microsoft.com/en-us/library/windows/desktop/aa394507(v=vs.85).aspx']
----
-name: WMIProfileUsersHomeDir
-doc: |
-  Get user homedir from Win32_UserProfile based on a known user's SID.
-
-  This artifact relies on having the SID field users.sid populated in the knowledge
-  base. We expect it to be collected with WindowsRegistryProfiles to
-  supply the rest of the user information.
-sources:
-- type: WMI
-  attributes: {query: SELECT * FROM Win32_UserProfile WHERE SID='%%users.sid%%'}
-labels: [Users]
-provides: [users.homedir]
-supported_os: [Windows]
-urls: ['http://msdn.microsoft.com/en-us/library/windows/desktop/ee886409(v=vs.85).aspx']

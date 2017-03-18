@@ -4,6 +4,7 @@
 import io
 import os
 import unittest
+import yaml
 
 from artifacts import definitions
 from artifacts import errors
@@ -33,13 +34,14 @@ class YamlArtifactsReaderTest(unittest.TestCase):
 
     self.assertEqual(len(artifact_definition.sources), 1)
     source_type = artifact_definition.sources[0]
-    self.assertNotEqual(source_type, None)
-    self.assertEqual(
-        source_type.type_indicator, definitions.TYPE_INDICATOR_FILE)
+    self.assertIsNotNone(source_type)
+    self.assertEqual(source_type.type_indicator,
+                     definitions.TYPE_INDICATOR_FILE)
 
-    expected_paths = sorted([
-        '%%environ_systemroot%%\\System32\\winevt\\Logs\\Security.evtx'])
-    self.assertEqual(sorted(source_type.paths), expected_paths)
+    expected_paths = [
+        '%%environ_systemroot%%\\System32\\winevt\\Logs\\Security.evtx'
+    ]
+    self.assertEqual(sorted(source_type.paths), sorted(expected_paths))
 
     self.assertEqual(len(artifact_definition.conditions), 1)
     expected_condition = 'os_major_version >= 6'
@@ -58,22 +60,24 @@ class YamlArtifactsReaderTest(unittest.TestCase):
 
     # Artifact with Windows Registry key source type.
     artifact_definition = artifact_definitions[1]
-    self.assertEqual(
-        artifact_definition.name, 'AllUsersProfileEnvironmentVariable')
+    self.assertEqual(artifact_definition.name,
+                     'AllUsersProfileEnvironmentVariable')
 
     self.assertEqual(len(artifact_definition.sources), 1)
     source_type = artifact_definition.sources[0]
-    self.assertNotEqual(source_type, None)
-    self.assertEqual(
-        source_type.type_indicator,
-        definitions.TYPE_INDICATOR_WINDOWS_REGISTRY_KEY)
+    self.assertIsNotNone(source_type)
+    self.assertEqual(source_type.type_indicator,
+                     definitions.TYPE_INDICATOR_WINDOWS_REGISTRY_KEY)
 
-    expected_keys = sorted([
-        ('HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows NT\\CurrentVersion\\'
-         'ProfileList\\ProfilesDirectory'),
-        ('HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows NT\\CurrentVersion\\'
-         'ProfileList\\AllUsersProfile')])
-    self.assertEqual(sorted(source_type.keys), expected_keys)
+    expected_key1 = (
+        'HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows NT\\CurrentVersion\\'
+        'ProfileList\\ProfilesDirectory')
+    expected_key2 = (
+        'HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows NT\\CurrentVersion\\'
+        'ProfileList\\AllUsersProfile')
+    expected_keys = [expected_key1, expected_key2]
+
+    self.assertEqual(sorted(source_type.keys), sorted(expected_keys))
 
     # Artifact with Windows Registry value source type.
     artifact_definition = artifact_definitions[2]
@@ -81,10 +85,9 @@ class YamlArtifactsReaderTest(unittest.TestCase):
 
     self.assertEqual(len(artifact_definition.sources), 1)
     source_type = artifact_definition.sources[0]
-    self.assertNotEqual(source_type, None)
-    self.assertEqual(
-        source_type.type_indicator,
-        definitions.TYPE_INDICATOR_WINDOWS_REGISTRY_VALUE)
+    self.assertIsNotNone(source_type)
+    self.assertEqual(source_type.type_indicator,
+                     definitions.TYPE_INDICATOR_WINDOWS_REGISTRY_VALUE)
 
     self.assertEqual(len(source_type.key_value_pairs), 1)
     key_value_pair = source_type.key_value_pairs[0]
@@ -102,9 +105,9 @@ class YamlArtifactsReaderTest(unittest.TestCase):
 
     self.assertEqual(len(artifact_definition.sources), 1)
     source_type = artifact_definition.sources[0]
-    self.assertNotEqual(source_type, None)
-    self.assertEqual(
-        source_type.type_indicator, definitions.TYPE_INDICATOR_WMI_QUERY)
+    self.assertIsNotNone(source_type)
+    self.assertEqual(source_type.type_indicator,
+                     definitions.TYPE_INDICATOR_WMI_QUERY)
 
     expected_query = (
         'SELECT * FROM Win32_UserProfile WHERE SID=\'%%users.sid%%\'')
@@ -116,9 +119,9 @@ class YamlArtifactsReaderTest(unittest.TestCase):
 
     self.assertEqual(len(artifact_definition.sources), 1)
     source_type = artifact_definition.sources[0]
-    self.assertNotEqual(source_type, None)
-    self.assertEqual(
-        source_type.type_indicator, definitions.TYPE_INDICATOR_ARTIFACT)
+    self.assertIsNotNone(source_type)
+    self.assertEqual(source_type.type_indicator,
+                     definitions.TYPE_INDICATOR_ARTIFACT_GROUP)
 
     # Artifact with command definition source type.
     artifact_definition = artifact_definitions[5]
@@ -126,9 +129,9 @@ class YamlArtifactsReaderTest(unittest.TestCase):
 
     self.assertEqual(len(artifact_definition.sources), 1)
     source_type = artifact_definition.sources[0]
-    self.assertNotEqual(source_type, None)
-    self.assertEqual(
-        source_type.type_indicator, definitions.TYPE_INDICATOR_COMMAND)
+    self.assertIsNotNone(source_type)
+    self.assertEqual(source_type.type_indicator,
+                     definitions.TYPE_INDICATOR_COMMAND)
 
     # Artifact with COMMAND definition collector definition.
     artifact_definition = artifact_definitions[5]
@@ -136,10 +139,9 @@ class YamlArtifactsReaderTest(unittest.TestCase):
 
     self.assertEqual(len(artifact_definition.sources), 1)
     collector_definition = artifact_definition.sources[0]
-    self.assertNotEqual(collector_definition, None)
-    self.assertEqual(
-        collector_definition.type_indicator,
-        definitions.TYPE_INDICATOR_COMMAND)
+    self.assertIsNotNone(collector_definition)
+    self.assertEqual(collector_definition.type_indicator,
+                     definitions.TYPE_INDICATOR_COMMAND)
 
   def testBadKey(self):
     """Tests top level keys are correct."""
@@ -147,7 +149,7 @@ class YamlArtifactsReaderTest(unittest.TestCase):
     file_object = io.StringIO(initial_value=u"""name: BadKey
 doc: bad extra key.
 sources:
-- type: ARTIFACT
+- type: ARTIFACT_GROUP
   attributes:
     names:
       - 'SystemEventLogEvtx'
@@ -177,12 +179,29 @@ supported_os: [Windows]
     file_object = io.StringIO(initial_value=u"""name: BadSupportedOS
 doc: supported_os should be an array of strings.
 sources:
-- type: ARTIFACT
+- type: ARTIFACT_GROUP
   attributes:
     names:
       - 'SystemEventLogEvtx'
 labels: [Logs]
 supported_os: Windows
+""")
+
+    with self.assertRaises(errors.FormatError):
+      _ = list(artifact_reader.ReadFileObject(file_object))
+
+  def testBadTopSupportedOS(self):
+    """Tests top level supported_os is checked correctly."""
+    artifact_reader = reader.YamlArtifactsReader()
+    file_object = io.StringIO(initial_value=u"""name: BadTopSupportedOS
+doc: Top supported_os should match supported_os from sources.
+sources:
+- type: ARTIFACT_GROUP
+  attributes:
+    names:
+      - 'SystemEventLogEvtx'
+  supported_os: [Windows]
+labels: [Logs]
 """)
 
     with self.assertRaises(errors.FormatError):
@@ -194,7 +213,7 @@ supported_os: Windows
     file_object = io.StringIO(initial_value=u"""name: BadLabel
 doc: badlabel.
 sources:
-- type: ARTIFACT
+- type: ARTIFACT_GROUP
   attributes:
     names:
       - 'SystemEventLogEvtx'
@@ -210,7 +229,7 @@ supported_os: [Windows]
     artifact_reader = reader.YamlArtifactsReader()
     file_object = io.StringIO(initial_value=u"""name: NoDoc
 sources:
-- type: ARTIFACT
+- type: ARTIFACT_GROUP
   attributes:
     names:
       - 'SystemEventLogEvtx'
@@ -219,7 +238,20 @@ sources:
     with self.assertRaises(errors.FormatError):
       _ = list(artifact_reader.ReadFileObject(file_object))
 
-  def testReadFile(self):
+  def testMissingNamesAttribute(self):
+    artifact_reader = reader.YamlArtifactsReader()
+    file_object = io.StringIO(initial_value=u"""name: NoNames
+doc: Missing names attr.
+sources:
+- type: ARTIFACT_GROUP
+  attributes:
+    - 'SystemEventLogEvtx'
+""")
+
+    with self.assertRaises(errors.FormatError):
+      _ = list(artifact_reader.ReadFileObject(file_object))
+
+  def testReadYamlFile(self):
     """Tests the ReadFile function."""
     artifact_reader = reader.YamlArtifactsReader()
     test_file = os.path.join('test_data', 'definitions.yaml')
@@ -233,6 +265,47 @@ sources:
     artifact_reader = reader.YamlArtifactsReader()
 
     artifact_definitions = list(artifact_reader.ReadDirectory('test_data'))
+
+    self.assertEqual(len(artifact_definitions), 7)
+
+  def testArtifactAsDict(self):
+    """Tests the ArtifactDefinition AsDict method returns the same dict that parsing artifact from yaml yields."""
+    artifact_reader = reader.YamlArtifactsReader()
+    test_file = os.path.join('test_data', 'definitions.yaml')
+
+    with open(test_file, 'r') as file_object:
+      for artifact_definition in yaml.safe_load_all(file_object):
+        artifact_object = artifact_reader.ReadArtifactDefinitionValues(
+            artifact_definition)
+        self.assertEqual(artifact_definition, artifact_object.AsDict())
+
+  def testDefinitionsAsDict(self):
+    """Tests that all defined artifacts can convert to dictionary representation without raising."""
+    artifact_reader = reader.YamlArtifactsReader()
+
+    artifact_definitions = list(artifact_reader.ReadDirectory('definitions'))
+
+    last_artifact_definition = None
+    for artifact in artifact_definitions:
+      try:
+        artifact_definition = artifact.AsDict()
+      except errors.FormatError:
+        error_location = u'At start'
+        if last_artifact_definition:
+          error_location = u'After: {0}'.format(last_artifact_definition.name)
+        self.fail(u'{0} failed to convert to dict'.format(error_location))
+      last_artifact_definition = artifact_definition
+
+
+class JsonArtifactsReaderTest(unittest.TestCase):
+  """Class to test the JSON artifacts reader."""
+
+  def testReadJsonFile(self):
+    """Tests the ReadFile function."""
+    artifact_reader = reader.JsonArtifactsReader()
+    test_file = os.path.join('test_data', 'definitions.json')
+
+    artifact_definitions = list(artifact_reader.ReadFile(test_file))
 
     self.assertEqual(len(artifact_definitions), 7)
 

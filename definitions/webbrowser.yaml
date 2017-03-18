@@ -3,10 +3,11 @@
 name: BrowserCache
 doc: Web browser cache of multiple web browsers.
 sources:
-- type: ARTIFACT
+- type: ARTIFACT_GROUP
   attributes:
     names:
       - 'ChromeCache'
+      - 'FirefoxCache'
       - 'InternetExplorerCache'
       - 'SafariCache'
 labels: [Browser]
@@ -15,7 +16,7 @@ supported_os: [Darwin,Linux,Windows]
 name: BrowserHistory
 doc: Web browser history of multiple web browsers.
 sources:
-- type: ARTIFACT
+- type: ARTIFACT_GROUP
   attributes:
     names:
       - 'ChromeHistory'
@@ -53,6 +54,7 @@ sources:
       - '%%users.localappdata%%\Chromium\User Data\*\Cache\*'
       - '%%users.localappdata%%\Chromium\User Data\*\Media Cache\*'
       - '%%users.localappdata%%\Chromium\User Data\*\GPUCache\*'
+    separator: '\'
   supported_os: [Windows]
 - type: FILE
   attributes:
@@ -94,6 +96,7 @@ sources:
       - '%%users.homedir%%/.config/chromium/*/Media Cache/*'
       - '%%users.homedir%%/.config/chromium/*/GPUCache/*'
   supported_os: [Linux]
+supported_os: [Windows,Darwin,Linux]
 labels: [Browser]
 urls: ['http://www.forensicswiki.org/wiki/Google_Chrome']
 ---
@@ -109,6 +112,7 @@ sources:
       - '%%users.localappdata%%\Google\Chrome SxS\User Data\*\History'
       - '%%users.localappdata%%\Chromium\User Data\*\Archived History'
       - '%%users.localappdata%%\Chromium\User Data\*\History'
+    separator: '\'
   supported_os: [Windows]
 - type: FILE
   attributes:
@@ -128,6 +132,7 @@ sources:
       - '%%users.homedir%%/.config/chromium/*/Archived History'
       - '%%users.homedir%%/.config/chromium/*/History'
   supported_os: [Linux]
+supported_os: [Windows,Darwin,Linux]
 labels: [Browser]
 urls: ['http://www.forensicswiki.org/wiki/Google_Chrome']
 ---
@@ -140,6 +145,7 @@ sources:
       - '%%users.localappdata%%\Google\Chrome\User Data\*\Extension Activity'
       - '%%users.localappdata%%\Google\Chrome SxS\User Data\*\Extension Activity'
       - '%%users.localappdata%%\Chromium\User Data\*\Extension Activity'
+    separator: '\'
   supported_os: [Windows]
 - type: FILE
   attributes:
@@ -154,6 +160,7 @@ sources:
       - '%%users.homedir%%/.config/google-chrome/*/Extension Activity'
       - '%%users.homedir%%/.config/chromium/*/Extension Activity'
   supported_os: [Linux]
+supported_os: [Windows,Darwin,Linux]
 labels: [Browser]
 urls: ['http://forensicswiki.org/wiki/Google_Chrome#Extension_Activity_database']
 ---
@@ -166,6 +173,7 @@ sources:
       - '%%users.localappdata%%\Google\Chrome\User Data\*\Extensions\**10'
       - '%%users.localappdata%%\Chromium\User Data\*\Extensions\**10'
       - '%%users.localappdata%%\Google\Chrome SxS\User Data\*\Extensions\**10'
+    separator: '\'
   supported_os: [Windows]
 - type: FILE
   attributes:
@@ -197,6 +205,66 @@ labels: [Browser]
 supported_os: [Windows]
 urls: ['https://developer.chrome.com/extensions/external_extensions#registry']
 ---
+name: ChromePreferences
+doc: Chrome Preferences file.
+sources:
+- type: FILE
+  attributes:
+    paths:
+      - '%%users.localappdata%%\Google\Chrome\User Data\*\Preferences'
+      - '%%users.localappdata%%\Google\Chrome SxS\User Data\*\Preferences'
+      - '%%users.localappdata%%\Chromium\User Data\*\Preferences'
+    separator: '\'
+  supported_os: [Windows]
+- type: FILE
+  attributes:
+    paths:
+      - '%%users.homedir%%/Library/Application Support/Google/Chrome/*/Preferences'
+      - '%%users.homedir%%/Library/Application Support/Google/Chrome Canary/*/Preferences'
+      - '%%users.homedir%%/Library/Application Support/Chromium/*/Preferences'
+  supported_os: [Darwin]
+- type: FILE
+  attributes:
+    paths:
+      - '%%users.homedir%%/.config/google-chrome/*/Preferences'
+      - '%%users.homedir%%/.config/chromium/*/Preferences'
+  supported_os: [Linux]
+supported_os: [Windows,Darwin,Linux]
+labels: [Browser]
+urls: ['http://forensicswiki.org/wiki/Google_Chrome#Configuration']
+---
+name: FirefoxCache
+doc: Mozilla Firefox browser caches.
+sources:
+- type: FILE
+  attributes:
+    paths:
+      - '%%users.localappdata%%\Mozilla\Firefox\Profiles\*.default\Cache\*'
+      - '%%users.localappdata%%\Mozilla\Firefox\Profiles\*.default\cache2\*'
+      - '%%users.localappdata%%\Mozilla\Firefox\Profiles\*.default\cache2\doomed\*'
+      - '%%users.localappdata%%\Mozilla\Firefox\Profiles\*.default\cache2\entries\*'
+    separator: '\'
+  supported_os: [Windows]
+- type: FILE
+  attributes:
+    paths:
+      - '%%users.homedir%%/Library/Caches/Firefox/Profiles/*.default/Cache/*'
+      - '%%users.homedir%%/Library/Caches/Firefox/Profiles/*.default/cache2/*'
+      - '%%users.homedir%%/Library/Caches/Firefox/Profiles/*.default/cache2/doomed/*'
+      - '%%users.homedir%%/Library/Caches/Firefox/Profiles/*.default/cache2/entries/*'
+  supported_os: [Darwin]
+- type: FILE
+  attributes:
+    paths:
+      - '%%users.homedir%%/.cache/.mozilla/firefox/*.default/Cache/*'
+      - '%%users.homedir%%/.cache/.mozilla/firefox/*.default/cache2/*'
+      - '%%users.homedir%%/.cache/.mozilla/firefox/*.default/cache2/doomed/*'
+      - '%%users.homedir%%/.cache/.mozilla/firefox/*.default/cache2/entries/*'
+  supported_os: [Linux]
+supported_os: [Windows,Darwin,Linux]
+labels: [Browser]
+urls: ['http://forensicswiki.org/wiki/Mozilla_Firefox']
+---
 name: FirefoxHistory
 doc: Firefox browser history (places.sqlite).
 sources:
@@ -205,6 +273,7 @@ sources:
     paths:
       - '%%users.localappdata%%\Mozilla\Firefox\Profiles\*\places.sqlite'
       - '%%users.appdata%%\Mozilla\Firefox\Profiles\*\places.sqlite'
+    separator: '\'
   supported_os: [Windows]
 - type: FILE
   attributes: {paths: ['%%users.homedir%%/Library/Application Support/Firefox/Profiles/*/places.sqlite']}
@@ -212,6 +281,7 @@ sources:
 - type: FILE
   attributes: {paths: ['%%users.homedir%%/.mozilla/firefox/*/places.sqlite']}
   supported_os: [Linux]
+supported_os: [Windows,Darwin,Linux]
 labels: [Browser]
 urls: ['http://www.forensicswiki.org/wiki/Mozilla_Firefox']
 ---
@@ -240,6 +310,7 @@ sources:
     paths:
       - '%%users.localappdata%%\Microsoft\Windows\Temporary Internet Files\Content.IE5\*\*'
       - '%%users.localappdata%%\Microsoft\Windows\Temporary Internet Files\Low\Content.IE5\*\*'
+    separator: '\'
 labels: [Browser]
 supported_os: [Windows]
 urls: ['http://www.forensicswiki.org/wiki/Internet_Explorer']
@@ -255,6 +326,7 @@ sources:
     paths:
       - '%%users.appdata%%\Microsoft\Windows\Cookies\index.dat'
       - '%%users.appdata%%\Microsoft\Windows\Cookies\Low\index.dat'
+    separator: '\'
 labels: [Browser]
 supported_os: [Windows]
 urls: ['http://www.forensicswiki.org/wiki/Internet_Explorer']
@@ -278,6 +350,7 @@ sources:
       - '%%users.userprofile%%\Local Settings\Application Data\Microsoft\Feeds Cache\index.dat'
       - '%%users.appdata%%\Microsoft\Windows\IEDownloadHistory\index.dat'
       - '%%users.localappdata%%\Microsoft\Windows\WebCache\WebCacheV*.dat'
+    separator: '\'
 labels: [Browser]
 supported_os: [Windows]
 urls: ['http://www.forensicswiki.org/wiki/Internet_Explorer']
@@ -383,8 +456,13 @@ sources:
   attributes: {paths: ['%%users.homedir%%/.opera/global_history.dat']}
   supported_os: [Linux]
 - type: FILE
-  attributes: {paths: ['%%users.appdata%%\Opera\Opera\global_history.dat']}
+  attributes:
+    paths:
+      - '%%users.appdata%%\Opera\Opera\global_history.dat'
+      - '%%users.appdata%%\Opera Software\Opera Stable\History'
+    separator: '\'
   supported_os: [Windows]
+supported_os: [Windows,Darwin,Linux]
 labels: [Browser]
 urls: ['http://www.forensicswiki.org/wiki/Opera']
 ---
@@ -392,7 +470,9 @@ name: SafariCache
 doc: Safari browser cache (cache.db).
 sources:
 - type: FILE
-  attributes: {paths: ['%%users.localappdata%%\Apple Computer\Safari\cache.db']}
+  attributes:
+    paths: ['%%users.localappdata%%\Apple Computer\Safari\cache.db']
+    separator: '\'
   supported_os: [Windows]
 - type: FILE
   attributes: {paths: ['%%users.homedir%%/Library/Caches/com.apple.Safari/cache.db']}
@@ -408,10 +488,15 @@ sources:
   attributes:
     paths:
       - '%%users.localappdata%%\Apple Computer\Safari\History.plist'
-      - '%%users.appdata%%\Roaming\Apple Computer\Safari\History.plist'
+      - '%%users.appdata%%\Apple Computer\Safari\History.plist'
+    separator: '\'
   supported_os: [Windows]
 - type: FILE
-  attributes: {paths: ['%%users.homedir%%/Library/Safari/History.plist']}
+  attributes:
+    paths:
+      - '%%users.homedir%%/Library/Safari/History.plist'
+      - '%%users.homedir%%/Library/Safari/History.db'
+      - '%%users.homedir%%/Library/Safari/History.db-wal'
   supported_os: [Darwin]
 supported_os: [Windows, Darwin]
 labels: [Browser]
